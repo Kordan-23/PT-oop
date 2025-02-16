@@ -1,0 +1,53 @@
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Scanner;
+
+interface AllowanceCalculator {
+    double calculateDailyAllowance();
+    double calculateSemesterAllowance();
+}
+
+class Allowance implements AllowanceCalculator {
+    private double dailyAllowance;
+    private static final int WEEKS_PER_SEMESTER = 18;
+    private static final int TOTAL_SEMESTERS = 6;
+
+    public Allowance(double dailyAllowance) {
+        this.dailyAllowance = dailyAllowance;
+    }
+
+    @Override
+    public double calculateDailyAllowance() {
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = LocalDate.of(today.getYear(), 4, 30);
+        long days = ChronoUnit.DAYS.between(today, endDate) + 1;
+        return days * dailyAllowance;
+    }
+
+    @Override
+    public double calculateSemesterAllowance() {
+        double totalAllowance = 0;
+        double currentAllowance = dailyAllowance;
+
+        for (int sem = 1; sem <= TOTAL_SEMESTERS; sem++) {
+            totalAllowance += (WEEKS_PER_SEMESTER * 7) * currentAllowance;
+            if (sem % 2 == 0) currentAllowance *= 1.03; // 3% increase every 2 semesters
+        }
+
+        return totalAllowance;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter your daily allowance: ₱");
+        double dailyAllowance = scanner.nextDouble();
+        scanner.close();
+
+        Allowance allowance = new Allowance(dailyAllowance);
+
+        System.out.printf("Total allowance until April 30: ₱%.2f%n", allowance.calculateDailyAllowance());
+        System.out.printf("Total allowance for 6 semesters: ₱%.2f%n", allowance.calculateSemesterAllowance());
+    }
+}
